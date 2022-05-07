@@ -1,0 +1,11 @@
+spacy
+spacypdfreader
+gensim
+pyLDAvis
+wordcloud
+streamlit
+matplotlib
+nltk
+pandas
+streamlit_option_menu
+plotly
