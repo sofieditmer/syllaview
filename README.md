@@ -18,8 +18,9 @@ This repository contains the scripts and resources for the exam project of the H
         |-- utils.py             # Utility functions
 
 |-- README.md                   
-|-- requirements.txt            # Dependencies to run scripts
-|-- install_requirements.txt    # Bash script to install dependencies and SpaCy language model
+|-- requirements.txt             # Dependencies to run scripts
+|-- install_requirements.txt     # Bash script to install dependencies and SpaCy language model
+|-- Figma Conceptual Prototype   # Conceptual prototype of SyllaView
 ```
 
 ## Usage
