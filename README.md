@@ -2,7 +2,9 @@
 
 ## Description
 
-This repository contains the scripts and resources for the exam project of the Human Computer Interaction (HCI) course at Aarhus University, Cognitive Science Master's Degree. 
+This repository contains the scripts and resources for the exam project of the Human Computer Interaction (HCI) course at Aarhus University, Cognitive Science Master's Degree. This project involved developing a platform which assists university students in gaining an overview of their course syllabi when studying for upcoming exams. If you wish to know how to use the platform, you can watch the demonstration video below.
+
+[![Watch the video](https://www.youtube.com/watch?v=fm7PIdc4tBU)
 
 ## Repository Structure
 
