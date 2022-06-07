@@ -338,47 +338,47 @@ def create_overview_df(pick_n_topics, overview_df, uploaded_file, reading_summar
     with st.spinner("Preparing your SyllaView..."):
 
         if pick_n_topics == 0:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords,
-                        'Own Notes': [" "]}
+                        'Own Notes': ""}
 
         elif pick_n_topics == 1:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords, 
                         'Main Topic': topic0,
-                        'Own Notes': [" "]}
+                        'Own Notes': ""}
 
         elif pick_n_topics == 2:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords, 
                         'Topic 1': topic0,
                         'Topic 2': topic1,
-                        'Own Notes': [" "]}
+                        'Own Notes': ""}
                     
         elif pick_n_topics == 3:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords, 
                         'Topic 1': topic0,
                         'Topic 2': topic1,
                         'Topic 3': topic2,
-                        'Own Notes': [" "]}
+                        'Own Notes': ""}
 
         elif pick_n_topics == 4:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords, 
                         'Topic 1': topic0,
                         'Topic 2': topic1,
                         'Topic 3': topic2,
                         'Topic 4': topic3,
-                        'Own Notes': ["Download table and add your own notes"]}
+                        'Own Notes': ""}
 
         else:
-            temp_df = {'Reading': [uploaded_file.name], 
+            temp_df = {'Reading': uploaded_file.name, 
                         'Summary': reading_summary,
                         'Keywords': wordcloud_keywords, 
                         'Topic 1': topic0,
@@ -386,6 +386,6 @@ def create_overview_df(pick_n_topics, overview_df, uploaded_file, reading_summar
                         'Topic 3': topic2,
                         'Topic 4': topic3,
                         'Topic 5': topic4,
-                        'Own Notes': ["Download table and add your own notes"]}                       
+                        'Own Notes': ""}                       
 
     return temp_df
