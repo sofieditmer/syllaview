@@ -9,3 +9,4 @@ nltk
 pandas
 streamlit_option_menu
 plotly
+clean-text
