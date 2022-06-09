@@ -18,10 +18,8 @@ def main():
         # text
         st.markdown("Tired of having multiple files opened at once to try and get a grasp of the course syllabus? Syllaview is a tool developed with university students in mind, allowing you to create a quick overview of your course syllabi. Watch the video below for a guided tour of how to use SyllaView.")
 
-        # video
-        video_file = open("/Users/SofieDitmer_1/Desktop/HCI/syllaview/src/pages/test_video.mp4", 'rb')
-        video_bytes = video_file.read()
-        st.video(video_bytes)
+        # demonstration video
+        st.video("https://www.youtube.com/watch?v=fm7PIdc4tBU")
 
 
         
