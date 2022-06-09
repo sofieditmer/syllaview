@@ -1,18 +1,22 @@
 """"
-Script that holds utility functions.
+UTILITY SCRIPTS
+
+This script holds several utility functions used in the create_syllaview.py script. 
 """
 
+# --------- PACKAGES --------- #
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
-nlp = spacy.load("en_core_web_lg") # English spacy pipeline 
+nlp = spacy.load("en_core_web_lg") 
 from string import punctuation
 from heapq import nlargest
 import os
 
-##### summarize function ######
+# --------- SUMMARIZER FUNCTION --------- #
 def summarize(text, length = "Short"):
     """
     Summarize function adapted from https://www.activestate.com/blog/how-to-do-text-summarization-with-python/
+    Adaptions included allowing the user to specify the length of the summary.
     """
 
     # annotate input text 
@@ -89,7 +93,7 @@ def summarize(text, length = "Short"):
 
     return summary
 
-###### convert to dictionary function ######
+# --------- CONVERT TO DICTIONARY FUNCTION --------- #
 def convert_tuple_to_dict(tuple, dic):
     """
     Converts tuple to dictionary
@@ -97,7 +101,7 @@ def convert_tuple_to_dict(tuple, dic):
     dic = dict(tuple)
     return dic
 
-###### save uploaded files ######
+# --------- SAVE UPLOADED FILES FUNCTION --------- #
 def save_uploadedfile(uploadedfile):
     """
     Save file in temporary folder.
@@ -105,7 +109,7 @@ def save_uploadedfile(uploadedfile):
     with open(os.path.join("tempDir", uploadedfile.name), "wb") as f:
         f.write(uploadedfile.getbuffer())
 
-###### convert df to csv ######
+# --------- CONVERT DATAFRAME TO CSV FUNCTION --------- #
 def convert_df_to_csv(df):
     """
     Convert dataframe to csv-file.

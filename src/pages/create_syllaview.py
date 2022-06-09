@@ -106,7 +106,7 @@ def main():
                     plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_file)
 
                     # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
-                    temp_df = create_overview_df(pick_n_topics, overview_df, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
+                    temp_df = create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
                     overview_df = overview_df.append(temp_df, ignore_index=True)   
 
                 # ----- VISUALIZATIONS ----- #
@@ -161,6 +161,7 @@ def main():
 
 # --------- FUNCTIONS --------- #
 
+# --------- READ FILES FUNCTION --------- #
 def read_files(uploaded_file, pick_len_summary):
     """
     Reads each uplodaed PDF, annotates them with SpaCy and creates summaries.
@@ -192,7 +193,7 @@ def read_files(uploaded_file, pick_len_summary):
 
     return doc, list_clean_tokens, reading_summary
 
-
+# --------- ESTIMATE MOST FREQUENT WORDS FUNCTION --------- #
 def most_frequent_words(list_clean_tokens, uploaded_file):
     """
     Estimates the most frequent words within each reading and creates a frequency plot.
@@ -226,7 +227,7 @@ def most_frequent_words(list_clean_tokens, uploaded_file):
 
     return frequency_plot
 
-
+# --------- CREATE WORDCLOUD FUNCTION --------- #
 def create_wordcloud(doc, uploaded_file):
     """
     Creates a wordcloud of the most frequent words.
@@ -252,7 +253,7 @@ def create_wordcloud(doc, uploaded_file):
 
         return keywords_wordcloud, wordcloud_keywords
 
-
+# --------- TOPIC MODELING FUNCTION --------- #
 def topic_modeling(list_clean_tokens, doc, uploaded_file):
     """
     Performs topic modeling on each reading and creates a wordcloud for each topic. 
@@ -329,8 +330,8 @@ def topic_modeling(list_clean_tokens, doc, uploaded_file):
 
     return plt, topic0, topic1, topic2, topic3, topic4
 
-
-def create_overview_df(pick_n_topics, overview_df, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4):
+# --------- CREATES OVERVIEW / SYLLAVIEW FUNCTION --------- #
+def create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4):
     """
     Creates the overview dataframe, SyllaView, which holds each reading as a row and the summary, keywords, and topics as columns.
     """
