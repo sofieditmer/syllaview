@@ -10,3 +10,10 @@ pandas
 streamlit_option_menu
 plotly
 clean-text
+autocorrect
+wordsegment
+opencv-python
+pytesseract
+transformers
+torch
+sentencepiece

@@ -11,6 +11,10 @@ nlp = spacy.load("en_core_web_lg")
 from string import punctuation
 from heapq import nlargest
 import os
+from autocorrect import Speller
+import wordsegment
+from transformers import pipeline
+summarization = pipeline("summarization")
 
 # --------- SUMMARIZER FUNCTION --------- #
 def summarize(text, length = "Short"):
@@ -115,3 +119,68 @@ def convert_df_to_csv(df):
     Convert dataframe to csv-file.
     """
     return df.to_csv().encode('utf-8')
+
+# --------- TEXT CLEAN-UP FUNCTION FOR OCR --------- #
+def replace(string):
+    """
+    Cleans up extracted text from OCR.
+    """
+    processed = string.replace("\n"," ")\
+                      .replace("\n\n"," ")\
+                      .replace("__"," ")\
+                      .replace(" - "," ")\
+                      .replace('-""' ," ")\
+                      .replace("|", "")\
+                      .replace("!", "")\
+                      .replace("\s"," ")\
+                      .lstrip()
+    
+    return " ".join(processed.split())
+
+# --------- SPELL-CHECKER AND TOKENIZER FUNCTION FOR OCR --------- #
+def ocr_correct(ocr_text):
+    """
+    Checks spelling and tokenizes extracted text from OCR. 
+    """
+    # initialize spell-checker and tokenizer
+    spell_checker = Speller(lang='en')
+    wordsegment.load()
+
+    # Segment based on unigram and bigram frequency
+    ocr = wordsegment.segment(ocr_text)
+
+    # join list as string
+    ocr = " ".join(ocr)
+    
+    # spellcheck string
+    ocr = spell_checker(ocr)
+    
+    return ocr
+
+# --------- SUMMARIZATION WITH TRANSFORMERS FUNCTION --------- #
+def summarize_using_transformer(doc, summary_length="Long"):
+    """
+    Summarizes the input text using the summarization pipeline from the Transformers library.
+    """
+
+    # convert doc to string
+    string = [sent.text.strip() for sent in doc.sents]
+
+    # unlist
+    string = ' '.join([str(elem) for elem in string])
+
+    if summary_length == "Short":
+        string = string[:350]
+
+    if summary_length == "Medium":
+        string = string[:550]
+    
+    if summary_length == "Long":
+        string = string[:1024]
+
+    # summarize
+    summary_text = summarization(string)[0]['summary_text']
+
+    return summary_text
+
+

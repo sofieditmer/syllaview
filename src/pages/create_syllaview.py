@@ -15,7 +15,7 @@ import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
 nlp = spacy.load("en_core_web_lg")
 import nltk
-from pages.utils import summarize, convert_tuple_to_dict, save_uploadedfile, convert_df_to_csv
+from pages.utils import summarize, convert_tuple_to_dict, save_uploadedfile, convert_df_to_csv, replace, ocr_correct, summarize_using_transformer
 from cleantext import clean
 from spacypdfreader import pdf_reader
 from gensim.corpora.dictionary import Dictionary
@@ -24,6 +24,8 @@ from wordcloud import WordCloud
 from itertools import chain
 import matplotlib.pyplot as plt
 import plotly.express as px
+import cv2
+import pytesseract
 
 # --------- MAIN FUNCTION --------- #
 
@@ -51,12 +53,16 @@ def main():
             # enable the user to also work with scans of books
             scans = st.checkbox("I have a scanned reading")
             if scans:
-                uploaded_scan = st.file_uploader("Upload your scanned readings", type=["jpg", "png"], accept_multiple_files=True)
+                uploaded_scans = st.file_uploader("Upload your scanned readings", type=["jpg", "png"], accept_multiple_files=True)
+
+            else:
+                uploaded_scans = None
 
             # create output directory if it does not exist
             if not os.path.exists(os.path.join("tempDir")):
                 os.mkdir(os.path.join("tempDir"))
 
+            # ----- PROCESS UPLOADED READINGS ----- #
             if len(uploaded_files) >= 1:
 
                 st.markdown("***")
@@ -158,6 +164,114 @@ def main():
                             frequency_plot.update_xaxes(tickangle=45)
                             st.plotly_chart(frequency_plot, use_container_width=True)
 
+            # ----- PROCESS SCANNED READINGS ----- #
+            if uploaded_scans != None and len(uploaded_scans) >= 1:
+
+                st.markdown("***")
+
+                # title
+                st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
+
+                # ----- CUSTOMIZATION OPTIONS ----- #
+                with st.expander("Click here for customization options"):
+                    
+                    # length of summary
+                    pick_len_summary = st.radio(
+                        "Length of the summary",
+                        ('Short', 'Medium', 'Long'))
+
+                    # number of topics
+                    pick_n_topics = st.slider("Number of topics", 0, 5, 1)
+
+                    # make overview_df to be appended for each uploaded article
+                    if pick_n_topics == 0:
+                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
+                    
+                    if pick_n_topics == 1:
+                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
+
+                    if pick_n_topics == 2:
+                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
+
+                    if pick_n_topics == 3:
+                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
+
+                    if pick_n_topics == 4:
+                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
+
+                for uploaded_scan in uploaded_scans:
+
+                    # ----- PERFORM OCR ----- #
+                    clean_OCR_text = perform_OCR(uploaded_scan)
+
+                    # ----- PREPARE TEXT ----- #
+                    doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+
+                    # ----- FREQUENCY PLOT ----- #
+                    frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
+
+                    # ----- WORDCLOUD ----- #
+                    keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
+
+                    # ----- TOPIC MODELING ----- #
+                    plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
+
+                    # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
+                    temp_df = create_overview_df(pick_n_topics, uploaded_scan, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
+                    overview_df = overview_df.append(temp_df, ignore_index=True)   
+
+                # ----- VISUALIZATIONS ----- #
+                if len(overview_df) >= 1:
+
+                    # unlist keywords and topics
+                    ', '.join(overview_df["Keywords"][0])
+
+                    # download button
+                    overview_csv = convert_df_to_csv(overview_df)
+                    st.download_button("Download Table", data=overview_csv, file_name='SyllaView.csv')
+
+                    # display syllaview
+                    overview_df = overview_df.set_index("Reading") 
+                    st.table(overview_df)
+
+                    # make the reader aware that there are more detail below
+                    st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
+
+                for uploaded_scan in uploaded_scans:
+
+                    with st.expander(f"Click to explore '{uploaded_scan.name}' in more detail", expanded=False):
+
+                        with st.spinner("Preparing visualizations..."):
+
+                            # ----- PERFORM OCR ----- #
+                            clean_OCR_text = perform_OCR(uploaded_scan)
+
+                            # ----- PREPARE TEXT ----- #
+                            doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+
+                            # ----- FREQUENCY PLOT ----- #
+                            frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
+
+                            # ----- WORDCLOUD ----- #
+                            keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
+
+                            # ----- TOPIC MODELING ----- #
+                            plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
+
+                            # ----- TOPIC MODELING ----- #
+                            st.markdown(f"<h4 style='text-align: center; color: black;'>The 5 most prevalent topics within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
+                            st.pyplot(plt, use_container_width=True)
+
+                            # ----- WORDCLOUD ----- #
+                            st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
+                            st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
+
+                            # ----- FREQUENCY PLOT ----- #
+                            st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
+                            frequency_plot.update_layout(title_x=0.5, title_font_size=20)
+                            frequency_plot.update_xaxes(tickangle=45)
+                            st.plotly_chart(frequency_plot, use_container_width=True)
+
 
 # --------- FUNCTIONS --------- #
 
@@ -188,8 +302,10 @@ def read_files(uploaded_file, pick_len_summary):
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
             # create summary of length specified by user
-            reading_summary = summarize(pdf_text, length = pick_len_summary)
-            reading_summary = clean(reading_summary)
+            #reading_summary = summarize(pdf_text, length = pick_len_summary)
+            #reading_summary = clean(reading_summary)
+
+            reading_summary = summarize_using_transformer(doc, pick_len_summary)
 
     return doc, list_clean_tokens, reading_summary
 
@@ -330,7 +446,7 @@ def topic_modeling(list_clean_tokens, doc, uploaded_file):
 
     return plt, topic0, topic1, topic2, topic3, topic4
 
-# --------- CREATES OVERVIEW / SYLLAVIEW FUNCTION --------- #
+# --------- CREATE OVERVIEW / SYLLAVIEW FUNCTION --------- #
 def create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4):
     """
     Creates the overview dataframe, SyllaView, which holds each reading as a row and the summary, keywords, and topics as columns.
@@ -390,3 +506,67 @@ def create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_
                         'Own Notes': ""}                       
 
     return temp_df
+
+# --------- OCR FUNCTION --------- #
+def perform_OCR(uploaded_scan):
+    
+    if uploaded_scan is not None:
+
+        with st.spinner(text=f"Extracting text from {uploaded_scan.name}"):
+
+            # save in tempDir
+            save_uploadedfile(uploaded_scan)
+            img_path = os.path.join("tempDir", uploaded_scan.name)
+
+            # load image
+            scan = cv2.imread(img_path)
+
+            # convert image to greyscale
+            grey = cv2.cvtColor(scan, cv2.COLOR_BGR2GRAY) 
+
+            # threshold image
+            (_, thres) = cv2.threshold(grey, 110, 255, cv2.THRESH_BINARY)
+
+            # extract text from image
+            text = pytesseract.image_to_string(thres)
+
+            # clean-up extracted text
+            clean_OCR_text = ocr_correct(replace(text))
+
+    return clean_OCR_text
+
+# --------- PREPARE OCR TEXT FUNCTION--------- #
+def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
+    """
+    Annotates the extracted text from OCR, creates a list of clean tokens, and prepares the reading summary. 
+    """
+    if uploaded_scan is not None:
+
+        with st.spinner(text=f"Preparing summary of {uploaded_scan.name}"):
+
+            # annotate text with spacy
+            doc = nlp(clean_OCR_text)
+
+            # extract meaningful tokens
+            remove = ['ADV','PRON','CCONJ','PUNCT','PART','DET','ADP','SPACE', 'NUM', 'SYM']
+            list_clean_tokens = [token.lemma_.lower() for token in doc if token.pos not in remove and not token.is_stop and token.is_alpha]
+
+            # split
+            list_clean_tokens = [token.split() for token in list_clean_tokens]
+
+            # create summary of length specified by user
+            #reading_summary = summarize(clean_OCR_text, length = pick_len_summary)
+            #reading_summary = clean(reading_summary)
+
+            reading_summary = summarize_using_transformer(doc, pick_len_summary)
+
+    return doc, list_clean_tokens, reading_summary
+
+        
+
+        
+
+
+
+
+
