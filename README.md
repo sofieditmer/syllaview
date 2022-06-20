@@ -2,9 +2,13 @@
 
 ## Description
 
-This repository contains the scripts and resources for the exam project of the Human Computer Interaction (HCI) course at Aarhus University, Cognitive Science Master's Degree. This project involved developing a platform which assists university students in gaining an overview of their course syllabi when studying for upcoming exams. If you wish to know how to use the platform, you can watch the [demonstration video](https://www.youtube.com/watch?v=fm7PIdc4tBU) below.
+This repository contains the scripts and resources for the exam project of the Human Computer Interaction (HCI) course at Aarhus University, Cognitive Science Master's Degree. This project involved developing a platform which assists university students in gaining an overview of their course syllabi when studying for upcoming exams. If you wish to know how to use the functional Streamlit platform, you can watch the [demonstration video](https://www.youtube.com/watch?v=fm7PIdc4tBU) below.
 
 [![Watch video](https://github.com/sofieditmer/syllaview/blob/main/src/video_image.png)](https://www.youtube.com/watch?v=fm7PIdc4tBU)
+
+## Conceptual and Functional Prototypes
+
+While this repository contains the functional Streamlit prototype developed in Python, you are welcome to also interact with the conceptual prototype developed in Figma. You can access it [here](https://www.figma.com/file/3tFwbVng7izhjc9OVAt67X/SyllaView?node-id=0%3A1)
 
 ## Repository Structure
 
@@ -38,4 +42,5 @@ streamlit run src/app.py
 ```
 
 ## Contributors
+
 This project was developed in a joined effort by Melina Vejlø and Sofie Ditmer.
