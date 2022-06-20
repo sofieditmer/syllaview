@@ -35,248 +35,226 @@ def main():
 
         st.markdown("***")
 
-        # course menu
-        choose = option_menu("", ["Course 1", "Course 2", "Course 3"],
-                        icons = ['bookmark-fill', 'bookmark-fill', 'bookmark-fill'],
-                        orientation = "horizontal",
-                        styles = {"container": {"padding": "5!important", "background-color": "#898989"}, 
-                                "icon": {"color": "black", "font-size": "15px"}, 
-                                "nav-link": {"font-size": "20px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-                                "nav-link-selected": {"background-color": "#B2BABB"}})
+        # ----- UPLOAD FILES ----- #
+        uploaded_files = st.file_uploader("Upload your syllabus as PDFs", type="pdf", accept_multiple_files=True)
 
-        # same functionalities for all courses
-        if choose == "Course 1" or choose == "Course 2" or choose == "Course 3":
+        # enable the user to also work with scans of books
+        scans = st.checkbox("I have a scanned reading")
+        if scans:
+            uploaded_scans = st.file_uploader("Upload your scanned readings", type=["jpg", "png"], accept_multiple_files=True)
 
-            # ----- UPLOAD FILES ----- #
-            uploaded_files = st.file_uploader("Upload your syllabus as PDFs", type="pdf", accept_multiple_files=True)
+        else:
+            uploaded_scans = None
 
-            # enable the user to also work with scans of books
-            scans = st.checkbox("I have a scanned reading")
-            if scans:
-                uploaded_scans = st.file_uploader("Upload your scanned readings", type=["jpg", "png"], accept_multiple_files=True)
+        # create output directory if it does not exist
+        if not os.path.exists(os.path.join("tempDir")):
+            os.mkdir(os.path.join("tempDir"))
 
-            else:
-                uploaded_scans = None
+        # ----- PROCESS UPLOADED READINGS ----- #
+        if len(uploaded_files) >= 1:
 
-            # create output directory if it does not exist
-            if not os.path.exists(os.path.join("tempDir")):
-                os.mkdir(os.path.join("tempDir"))
+            st.markdown("***")
 
-            # ----- PROCESS UPLOADED READINGS ----- #
-            if len(uploaded_files) >= 1:
+            # title
+            st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
 
-                st.markdown("***")
+            # ----- CUSTOMIZATION OPTIONS ----- #
+            with st.expander("Click here for customization options"):
 
-                # title
-                st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
+                # number of topics
+                pick_n_topics = st.slider("Number of topics", 0, 5, 1)
 
-                # ----- CUSTOMIZATION OPTIONS ----- #
-                with st.expander("Click here for customization options"):
-                    
-                    # length of summary
-                    pick_len_summary = st.radio(
-                        "Length of the summary",
-                        ('Short', 'Medium', 'Long'))
+                # make overview_df to be appended for each uploaded article
+                if pick_n_topics == 0:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
+                
+                if pick_n_topics == 1:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
 
-                    # number of topics
-                    pick_n_topics = st.slider("Number of topics", 0, 5, 1)
+                if pick_n_topics == 2:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
 
-                    # make overview_df to be appended for each uploaded article
-                    if pick_n_topics == 0:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
-                    
-                    if pick_n_topics == 1:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
+                if pick_n_topics == 3:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
 
-                    if pick_n_topics == 2:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
+                if pick_n_topics == 4:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
 
-                    if pick_n_topics == 3:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
+            for uploaded_file in uploaded_files:
 
-                    if pick_n_topics == 4:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
+                # ----- READ PDFs ----- #
+                doc, list_clean_tokens, reading_summary = read_files(uploaded_file)
 
-                for uploaded_file in uploaded_files:
+                # ----- FREQUENCY PLOT ----- #
+                frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
 
-                    # ----- READ PDFs ----- #
-                    doc, list_clean_tokens, reading_summary = read_files(uploaded_file, pick_len_summary)
+                # ----- WORDCLOUD ----- #
+                keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_file)
 
-                    # ----- FREQUENCY PLOT ----- #
-                    frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
+                # ----- TOPIC MODELING ----- #
+                plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_file)
 
-                    # ----- WORDCLOUD ----- #
-                    keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_file)
+                # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
+                temp_df = create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
+                overview_df = overview_df.append(temp_df, ignore_index=True)   
 
-                    # ----- TOPIC MODELING ----- #
-                    plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_file)
+            # ----- VISUALIZATIONS ----- #
+            if len(overview_df) >= 1:
 
-                    # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
-                    temp_df = create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
-                    overview_df = overview_df.append(temp_df, ignore_index=True)   
+                # unlist keywords and topics
+                ', '.join(overview_df["Keywords"][0])
 
-                # ----- VISUALIZATIONS ----- #
-                if len(overview_df) >= 1:
+                # download button
+                overview_csv = convert_df_to_csv(overview_df)
+                st.download_button("Download Table", data=overview_csv, file_name='SyllaView.csv')
 
-                    # unlist keywords and topics
-                    ', '.join(overview_df["Keywords"][0])
+                # display syllaview
+                overview_df = overview_df.set_index("Reading") 
+                st.table(overview_df)
 
-                    # download button
-                    overview_csv = convert_df_to_csv(overview_df)
-                    st.download_button("Download Table", data=overview_csv, file_name='SyllaView.csv')
+                # make the reader aware that there are more detail below
+                st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
 
-                    # display syllaview
-                    overview_df = overview_df.set_index("Reading") 
-                    st.table(overview_df)
+            for uploaded_file in uploaded_files:
 
-                    # make the reader aware that there are more detail below
-                    st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
+                with st.expander(f"Click to explore '{uploaded_file.name}' in more detail", expanded=False):
 
-                for uploaded_file in uploaded_files:
+                    with st.spinner("Preparing visualizations..."):
 
-                    with st.expander(f"Click to explore '{uploaded_file.name}' in more detail", expanded=False):
+                        # ----- READ PDFs ----- #
+                        doc, list_clean_tokens, _ = read_files(uploaded_file)
 
-                        with st.spinner("Preparing visualizations..."):
+                        # ----- FREQUENCY PLOT ----- #
+                        frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
 
-                            # ----- READ PDFs ----- #
-                            doc, list_clean_tokens, _ = read_files(uploaded_file, pick_len_summary)
+                        # ----- WORDCLOUD ----- #
+                        keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_file)
 
-                            # ----- FREQUENCY PLOT ----- #
-                            frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
+                        # ----- TOPIC MODELING ----- #
+                        plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_file)
 
-                            # ----- WORDCLOUD ----- #
-                            keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_file)
+                        # ----- TOPIC MODELING ----- #
+                        st.markdown(f"<h4 style='text-align: center; color: black;'>The 5 most prevalent topics within '{uploaded_file.name}'</h1>", unsafe_allow_html=True)
+                        st.pyplot(plt, use_container_width=True)
 
-                            # ----- TOPIC MODELING ----- #
-                            plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_file)
+                        # ----- WORDCLOUD ----- #
+                        st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_file.name}'</h1>", unsafe_allow_html=True)
+                        st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
 
-                            # ----- TOPIC MODELING ----- #
-                            st.markdown(f"<h4 style='text-align: center; color: black;'>The 5 most prevalent topics within '{uploaded_file.name}'</h1>", unsafe_allow_html=True)
-                            st.pyplot(plt, use_container_width=True)
+                        # ----- FREQUENCY PLOT ----- #
+                        st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
+                        frequency_plot.update_layout(title_x=0.5, title_font_size=20)
+                        frequency_plot.update_xaxes(tickangle=45)
+                        st.plotly_chart(frequency_plot, use_container_width=True)
 
-                            # ----- WORDCLOUD ----- #
-                            st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_file.name}'</h1>", unsafe_allow_html=True)
-                            st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
+        # ----- PROCESS SCANNED READINGS ----- #
+        if uploaded_scans != None and len(uploaded_scans) >= 1:
 
-                            # ----- FREQUENCY PLOT ----- #
-                            st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
-                            frequency_plot.update_layout(title_x=0.5, title_font_size=20)
-                            frequency_plot.update_xaxes(tickangle=45)
-                            st.plotly_chart(frequency_plot, use_container_width=True)
+            st.markdown("***")
 
-            # ----- PROCESS SCANNED READINGS ----- #
-            if uploaded_scans != None and len(uploaded_scans) >= 1:
+            # title
+            st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
 
-                st.markdown("***")
+            # ----- CUSTOMIZATION OPTIONS ----- #
+            with st.expander("Click here for customization options"):
 
-                # title
-                st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
+                # number of topics
+                pick_n_topics = st.slider("Number of topics", 0, 5, 1)
 
-                # ----- CUSTOMIZATION OPTIONS ----- #
-                with st.expander("Click here for customization options"):
-                    
-                    # length of summary
-                    pick_len_summary = st.radio(
-                        "Length of the summary",
-                        ('Short', 'Medium', 'Long'))
+                # make overview_df to be appended for each uploaded article
+                if pick_n_topics == 0:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
+                
+                if pick_n_topics == 1:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
 
-                    # number of topics
-                    pick_n_topics = st.slider("Number of topics", 0, 5, 1)
+                if pick_n_topics == 2:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
 
-                    # make overview_df to be appended for each uploaded article
-                    if pick_n_topics == 0:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
-                    
-                    if pick_n_topics == 1:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
+                if pick_n_topics == 3:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
 
-                    if pick_n_topics == 2:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
+                if pick_n_topics == 4:
+                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
 
-                    if pick_n_topics == 3:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
+            for uploaded_scan in uploaded_scans:
 
-                    if pick_n_topics == 4:
-                        overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
+                # ----- PERFORM OCR ----- #
+                clean_OCR_text = perform_OCR(uploaded_scan)
 
-                for uploaded_scan in uploaded_scans:
+                # ----- PREPARE TEXT ----- #
+                doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text)
 
-                    # ----- PERFORM OCR ----- #
-                    clean_OCR_text = perform_OCR(uploaded_scan)
+                # ----- FREQUENCY PLOT ----- #
+                frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
 
-                    # ----- PREPARE TEXT ----- #
-                    doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+                # ----- WORDCLOUD ----- #
+                keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
 
-                    # ----- FREQUENCY PLOT ----- #
-                    frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
+                # ----- TOPIC MODELING ----- #
+                plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
 
-                    # ----- WORDCLOUD ----- #
-                    keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
+                # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
+                temp_df = create_overview_df(pick_n_topics, uploaded_scan, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
+                overview_df = overview_df.append(temp_df, ignore_index=True)   
 
-                    # ----- TOPIC MODELING ----- #
-                    plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
+            # ----- VISUALIZATIONS ----- #
+            if len(overview_df) >= 1:
 
-                    # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
-                    temp_df = create_overview_df(pick_n_topics, uploaded_scan, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
-                    overview_df = overview_df.append(temp_df, ignore_index=True)   
+                # unlist keywords and topics
+                ', '.join(overview_df["Keywords"][0])
 
-                # ----- VISUALIZATIONS ----- #
-                if len(overview_df) >= 1:
+                # download button
+                overview_csv = convert_df_to_csv(overview_df)
+                st.download_button("Download Table", data=overview_csv, file_name='SyllaView.csv')
 
-                    # unlist keywords and topics
-                    ', '.join(overview_df["Keywords"][0])
+                # display syllaview
+                overview_df = overview_df.set_index("Reading") 
+                st.table(overview_df)
 
-                    # download button
-                    overview_csv = convert_df_to_csv(overview_df)
-                    st.download_button("Download Table", data=overview_csv, file_name='SyllaView.csv')
+                # make the reader aware that there are more detail below
+                st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
 
-                    # display syllaview
-                    overview_df = overview_df.set_index("Reading") 
-                    st.table(overview_df)
+            for uploaded_scan in uploaded_scans:
 
-                    # make the reader aware that there are more detail below
-                    st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
+                with st.expander(f"Click to explore '{uploaded_scan.name}' in more detail", expanded=False):
 
-                for uploaded_scan in uploaded_scans:
+                    with st.spinner("Preparing visualizations..."):
 
-                    with st.expander(f"Click to explore '{uploaded_scan.name}' in more detail", expanded=False):
+                        # ----- PERFORM OCR ----- #
+                        clean_OCR_text = perform_OCR(uploaded_scan)
 
-                        with st.spinner("Preparing visualizations..."):
+                        # ----- PREPARE TEXT ----- #
+                        doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text)
 
-                            # ----- PERFORM OCR ----- #
-                            clean_OCR_text = perform_OCR(uploaded_scan)
+                        # ----- FREQUENCY PLOT ----- #
+                        frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
 
-                            # ----- PREPARE TEXT ----- #
-                            doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+                        # ----- WORDCLOUD ----- #
+                        keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
 
-                            # ----- FREQUENCY PLOT ----- #
-                            frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
+                        # ----- TOPIC MODELING ----- #
+                        plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
 
-                            # ----- WORDCLOUD ----- #
-                            keywords_wordcloud, wordcloud_keywords = create_wordcloud(doc, uploaded_scan)
+                        # ----- TOPIC MODELING ----- #
+                        st.markdown(f"<h4 style='text-align: center; color: black;'>The 5 most prevalent topics within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
+                        st.pyplot(plt, use_container_width=True)
 
-                            # ----- TOPIC MODELING ----- #
-                            plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
+                        # ----- WORDCLOUD ----- #
+                        st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
+                        st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
 
-                            # ----- TOPIC MODELING ----- #
-                            st.markdown(f"<h4 style='text-align: center; color: black;'>The 5 most prevalent topics within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
-                            st.pyplot(plt, use_container_width=True)
-
-                            # ----- WORDCLOUD ----- #
-                            st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
-                            st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
-
-                            # ----- FREQUENCY PLOT ----- #
-                            st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
-                            frequency_plot.update_layout(title_x=0.5, title_font_size=20)
-                            frequency_plot.update_xaxes(tickangle=45)
-                            st.plotly_chart(frequency_plot, use_container_width=True)
+                        # ----- FREQUENCY PLOT ----- #
+                        st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
+                        frequency_plot.update_layout(title_x=0.5, title_font_size=20)
+                        frequency_plot.update_xaxes(tickangle=45)
+                        st.plotly_chart(frequency_plot, use_container_width=True)
 
 
 # --------- FUNCTIONS --------- #
 
 # --------- READ FILES FUNCTION --------- #
-def read_files(uploaded_file, pick_len_summary):
+def read_files(uploaded_file):
     """
     Reads each uplodaed PDF, annotates them with SpaCy and creates summaries.
     """
@@ -302,10 +280,8 @@ def read_files(uploaded_file, pick_len_summary):
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
             # create summary of length specified by user
-            #reading_summary = summarize(pdf_text, length = pick_len_summary)
-            #reading_summary = clean(reading_summary)
-
-            reading_summary = summarize_using_transformer(doc, pick_len_summary)
+            reading_summary = summarize(doc)
+            reading_summary = clean(reading_summary)
 
     return doc, list_clean_tokens, reading_summary
 
@@ -536,7 +512,7 @@ def perform_OCR(uploaded_scan):
     return clean_OCR_text
 
 # --------- PREPARE OCR TEXT FUNCTION--------- #
-def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
+def prepare_ocr_text(uploaded_scan, clean_OCR_text):
     """
     Annotates the extracted text from OCR, creates a list of clean tokens, and prepares the reading summary. 
     """
@@ -554,11 +530,8 @@ def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
             # split
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
-            # create summary of length specified by user
-            #reading_summary = summarize(clean_OCR_text, length = pick_len_summary)
-            #reading_summary = clean(reading_summary)
-
-            reading_summary = summarize_using_transformer(doc, pick_len_summary)
+            # create summary
+            reading_summary = summarize_using_transformer(doc)
 
     return doc, list_clean_tokens, reading_summary
 

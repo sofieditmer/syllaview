@@ -5,6 +5,7 @@ This script holds several utility functions used in the create_syllaview.py scri
 """
 
 # --------- PACKAGES --------- #
+from unittest.util import _MAX_LENGTH
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
 nlp = spacy.load("en_core_web_lg") 
@@ -62,36 +63,18 @@ def summarize(text, length = "Short"):
     # to make the compiler work
     summary = None
 
-    if length == "Short":
-        # lenght of summary which depends on the user input 
-        sentence_length = len(sentence_tokens)
-        per = 2/sentence_length #select_length=int(len(sentence_tokens)*per)
-        select_length=int(sentence_length*per)
-        
-        # create summary
-        summary=nlargest(select_length, sentence_scores, key=sentence_scores.get)
+    if length == "Short":        
+        summary=nlargest(5, sentence_scores, key=sentence_scores.get)
         final_summary=[word.text for word in summary]
         summary=''.join(final_summary)
 
     if length == "Medium":
-        # lenght of summary which depends on the user input 
-        sentence_length = len(sentence_tokens)
-        per = 3/sentence_length #select_length=int(len(sentence_tokens)*per)
-        select_length=int(sentence_length*per)
-        
-        # create summary
-        summary=nlargest(select_length, sentence_scores, key=sentence_scores.get)
+        summary=nlargest(10, sentence_scores, key=sentence_scores.get)
         final_summary=[word.text for word in summary]
         summary=''.join(final_summary)
 
     if length == "Long":
-        # lenght of summary which depends on the user input 
-        sentence_length = len(sentence_tokens)
-        per = 4/sentence_length #select_length=int(len(sentence_tokens)*per)
-        select_length=int(sentence_length*per)
-        
-        # create summary
-        summary=nlargest(select_length, sentence_scores, key=sentence_scores.get)
+        summary=nlargest(15, sentence_scores, key=sentence_scores.get)
         final_summary=[word.text for word in summary]
         summary=''.join(final_summary)
 
@@ -158,7 +141,7 @@ def ocr_correct(ocr_text):
     return ocr
 
 # --------- SUMMARIZATION WITH TRANSFORMERS FUNCTION --------- #
-def summarize_using_transformer(doc, summary_length="Long"):
+def summarize_using_transformer(doc):
     """
     Summarizes the input text using the summarization pipeline from the Transformers library.
     """
@@ -169,14 +152,8 @@ def summarize_using_transformer(doc, summary_length="Long"):
     # unlist
     string = ' '.join([str(elem) for elem in string])
 
-    if summary_length == "Short":
-        string = string[:350]
-
-    if summary_length == "Medium":
-        string = string[:550]
-    
-    if summary_length == "Long":
-        string = string[:1024]
+    # pick maximum length as input
+    string = string[:1024]
 
     # summarize
     summary_text = summarization(string)[0]['summary_text']
