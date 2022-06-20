@@ -6,9 +6,9 @@ This repository contains the scripts and resources for the exam project of the H
 
 [![Watch video](https://github.com/sofieditmer/syllaview/blob/main/src/video_image.png)](https://www.youtube.com/watch?v=fm7PIdc4tBU)
 
-## Conceptual and Functional Prototypes
+## Figma vs. Streamlit
 
-While this repository contains the functional Streamlit prototype developed in Python, you are welcome to also interact with the conceptual prototype developed in Figma. You can access it [here](https://www.figma.com/file/3tFwbVng7izhjc9OVAt67X/SyllaView?node-id=0%3A1)
+While this repository contains the functional Streamlit prototype developed in Python, you are welcome to also interact with the conceptual prototype developed in Figma. You can access it [here](https://www.figma.com/proto/3tFwbVng7izhjc9OVAt67X/SyllaView?node-id=38%3A6092&scaling=contain&page-id=0%3A1&starting-point-node-id=38%3A6092).
 
 ## Repository Structure
 
