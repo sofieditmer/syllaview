@@ -27,10 +27,14 @@ This repository contains the scripts and resources for the exam project of the H
 
 **!** The scripts have only been tested on Linux, using Python 3.9.1.  
 
-To run the scripts, we recommend cloning this repository and installing necessary dependencies in a virtual environment. Dependencies are listed in the `requirements.txt` file. To install all necessary requirements, including the English spaCy language model, the bash script `install_requirements.sh` should be used. Once, the necessary requirements have been installed the Streamlit App can be run as follows:
+To run the scripts, we recommend cloning this repository and installing necessary dependencies in a virtual environment. Dependencies are listed in the `requirements.txt` file. To install all necessary requirements, including the English spaCy language model, the bash script `install_requirements.sh` should be used. Once, the necessary requirements have been installed the Streamlit App can be run.
 
 ```
-(environment) $ streamlit run src/app.py
+git clone https://github.com/sofieditmer/syllaview
+
+bash install_requirements.sh
+
+streamlit run src/app.py
 ```
 
 ## Contributors
