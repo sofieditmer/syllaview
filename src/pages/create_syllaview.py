@@ -15,7 +15,7 @@ import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
 nlp = spacy.load("en_core_web_lg")
 import nltk
-from pages.utils import summarize, convert_tuple_to_dict, save_uploadedfile, convert_df_to_csv, replace, ocr_correct, summarize_using_transformer
+from pages.utils import convert_tuple_to_dict, save_uploadedfile, convert_df_to_csv, replace, ocr_correct, summarize_using_transformer
 from cleantext import clean
 from spacypdfreader import pdf_reader
 from gensim.corpora.dictionary import Dictionary
@@ -58,8 +58,25 @@ def main():
             # title
             st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
 
+            # infobox
+            with st.expander("Click here for information about the SyllaView table", expanded=False):
+
+                st.write("**How are the *summaries* made?**")
+                st.write("When uploading a PDF-file the Python package *pdf_reader* is used to extract the text from the file. The text is then annotated using the SpaCy English model *en_core_web_lg* which is a trained language model. Then the summarization-pipeline available in the *Transformers* Python package is used to create a text summary. If you wish to know more about how the summarization works, you can read more [here](https://huggingface.co/tasks/summarization) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
+            
+                st.write("**How are the *keywords* identified?**")
+                st.write("The keywords are the most common words in the uploaded reading. These are estimated using the *FreqDist* function available in the *NLTK* library.")
+
+                st.write("**How are the *topics* identified?**")
+                st.write("The topics are identified using topic modeling. Topic modeling is a text-mining tool used to extract hidden semantic structure from a text. Topic modeling assumes that each document can be described as a distribution of topics and each topic can be described by as distribution of words. In SyllaView, the topics are extracted from the uploaded readings using the *LdaMulticore* function available in *Gensim*. This type of analysis is based on word frequency and the assumption that (1) a given word will appear more if a text is about that specific topic and (2) any text typically contains more than one topic. The latter is the reason why SyllaView allows the user to estimate up to 5 topics per text. The topics are listed as clusters of words that make up that particular topic. If you wish to know more about how topic modeling works you can read more [here](https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
+
             # ----- CUSTOMIZATION OPTIONS ----- #
             with st.expander("Click here for customization options"):
+
+                # length of summary
+                pick_len_summary = st.radio(
+                    "Length of the summary",
+                    ('Short', 'Medium', 'Long'))
 
                 # number of topics
                 pick_n_topics = st.slider("Number of topics", 0, 5, 1)
@@ -83,7 +100,7 @@ def main():
             for uploaded_file in uploaded_files:
 
                 # ----- READ PDFs ----- #
-                doc, list_clean_tokens, reading_summary = read_files(uploaded_file)
+                doc, list_clean_tokens, reading_summary = read_files(uploaded_file, pick_len_summary)
 
                 # ----- FREQUENCY PLOT ----- #
                 frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
@@ -111,6 +128,7 @@ def main():
                 # display syllaview
                 overview_df = overview_df.set_index("Reading") 
                 st.table(overview_df)
+                st.caption("✹You cannot write your own notes directly into the table, but if you download it you are able to edit it.")
 
                 # make the reader aware that there are more detail below
                 st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
@@ -122,7 +140,7 @@ def main():
                     with st.spinner("Preparing visualizations..."):
 
                         # ----- READ PDFs ----- #
-                        doc, list_clean_tokens, _ = read_files(uploaded_file)
+                        doc, list_clean_tokens, _ = read_files(uploaded_file, pick_len_summary)
 
                         # ----- FREQUENCY PLOT ----- #
                         frequency_plot = most_frequent_words(list_clean_tokens, uploaded_file)
@@ -155,8 +173,25 @@ def main():
             # title
             st.markdown(f"<h4 style='text-align: center; color: black;'>Below is your Syllaview</h1>", unsafe_allow_html=True)
 
+            # infobox
+            with st.expander("Click here for information about the SyllaView table", expanded=False):
+
+                st.write("**How are the *summaries* made?**")
+                st.write("When uploading a PDF-file the Python package *pdf_reader* is used to extract the text from the file. The text is then annotated using the SpaCy English model *en_core_web_lg* which is a trained language model. Then the summarization-pipeline available in the *Transformers* Python package is used to create a text summary. If you wish to know more about how the summarization works, you can read more [here](https://huggingface.co/tasks/summarization) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
+            
+                st.write("**How are the *keywords* identified?**")
+                st.write("The keywords are the most common words in the uploaded reading. These are estimated using the *FreqDist* function available in the *NLTK* library.")
+
+                st.write("**How are the *topics* identified?**")
+                st.write("The topics are identified using topic modeling. Topic modeling is a text-mining tool used to extract hidden semantic structure from a text. Topic modeling assumes that each document can be described as a distribution of topics and each topic can be described by as distribution of words. In SyllaView, the topics are extracted from the uploaded readings using the *LdaMulticore* function available in *Gensim*. This type of analysis is based on word frequency and the assumption that (1) a given word will appear more if a text is about that specific topic and (2) any text typically contains more than one topic. The latter is the reason why SyllaView allows the user to estimate up to 5 topics per text. The topics are listed as clusters of words that make up that particular topic. If you wish to know more about how topic modeling works you can read more [here](https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
+
             # ----- CUSTOMIZATION OPTIONS ----- #
             with st.expander("Click here for customization options"):
+
+                # length of summary
+                pick_len_summary = st.radio(
+                    "Length of the summary",
+                    ('Short', 'Medium', 'Long'))
 
                 # number of topics
                 pick_n_topics = st.slider("Number of topics", 0, 5, 1)
@@ -183,7 +218,7 @@ def main():
                 clean_OCR_text = perform_OCR(uploaded_scan)
 
                 # ----- PREPARE TEXT ----- #
-                doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text)
+                doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
 
                 # ----- FREQUENCY PLOT ----- #
                 frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
@@ -211,6 +246,7 @@ def main():
                 # display syllaview
                 overview_df = overview_df.set_index("Reading") 
                 st.table(overview_df)
+                st.caption("✹You cannot write your own notes directly into the table, but if you download it you are able to edit it.")
 
                 # make the reader aware that there are more detail below
                 st.markdown(f"<h5 style='text-align: center; color: black;'>Explore readings in more detail below</h1>", unsafe_allow_html=True)
@@ -225,7 +261,7 @@ def main():
                         clean_OCR_text = perform_OCR(uploaded_scan)
 
                         # ----- PREPARE TEXT ----- #
-                        doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text)
+                        doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
 
                         # ----- FREQUENCY PLOT ----- #
                         frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
@@ -242,7 +278,7 @@ def main():
 
                         # ----- WORDCLOUD ----- #
                         st.markdown(f"<h4 style='text-align: center; color: black;'>Common words within '{uploaded_scan.name}'</h1>", unsafe_allow_html=True)
-                        st.image(keywords_wordcloud.to_array(), caption = "The sizes of the words correspond to their frequencies")
+                        st.image(keywords_wordcloud.to_array(), caption = "The size of the words correspond to their frequencies")
 
                         # ----- FREQUENCY PLOT ----- #
                         st.markdown("<h4 style='text-align: center; color: black;'>Word Frequencies</h1>", unsafe_allow_html=True)
@@ -254,7 +290,7 @@ def main():
 # --------- FUNCTIONS --------- #
 
 # --------- READ FILES FUNCTION --------- #
-def read_files(uploaded_file):
+def read_files(uploaded_file, pick_len_summary):
     """
     Reads each uplodaed PDF, annotates them with SpaCy and creates summaries.
     """
@@ -279,9 +315,8 @@ def read_files(uploaded_file):
             # split
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
-            # create summary of length specified by user
-            reading_summary = summarize(doc)
-            reading_summary = clean(reading_summary)
+            # create abstractive summary
+            reading_summary = summarize_using_transformer(doc, pick_len_summary)
 
     return doc, list_clean_tokens, reading_summary
 
@@ -512,7 +547,7 @@ def perform_OCR(uploaded_scan):
     return clean_OCR_text
 
 # --------- PREPARE OCR TEXT FUNCTION--------- #
-def prepare_ocr_text(uploaded_scan, clean_OCR_text):
+def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
     """
     Annotates the extracted text from OCR, creates a list of clean tokens, and prepares the reading summary. 
     """
@@ -531,7 +566,7 @@ def prepare_ocr_text(uploaded_scan, clean_OCR_text):
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
             # create summary
-            reading_summary = summarize_using_transformer(doc)
+            reading_summary = summarize_using_transformer(doc, pick_len_summary)
 
     return doc, list_clean_tokens, reading_summary
 

@@ -21,7 +21,6 @@ summarization = pipeline("summarization")
 def summarize(text, length = "Short"):
     """
     Summarize function adapted from https://www.activestate.com/blog/how-to-do-text-summarization-with-python/
-    Adaptions included allowing the user to specify the length of the summary.
     """
 
     # annotate input text 
@@ -60,7 +59,7 @@ def summarize(text, length = "Short"):
                 else:
                     sentence_scores[sent]+=word_frequencies[word.text.lower()]
 
-    # to make the compiler work
+     # to make the compiler work
     summary = None
 
     if length == "Short":        
@@ -141,11 +140,10 @@ def ocr_correct(ocr_text):
     return ocr
 
 # --------- SUMMARIZATION WITH TRANSFORMERS FUNCTION --------- #
-def summarize_using_transformer(doc):
+def summarize_using_transformer(doc, pick_len_summary = "Long"):
     """
     Summarizes the input text using the summarization pipeline from the Transformers library.
     """
-
     # convert doc to string
     string = [sent.text.strip() for sent in doc.sents]
 
@@ -155,8 +153,15 @@ def summarize_using_transformer(doc):
     # pick maximum length as input
     string = string[:1024]
 
-    # summarize
-    summary_text = summarization(string)[0]['summary_text']
+    # Make summary with length determined by user input
+    if pick_len_summary == "Short":
+        summary_text = summarization(string, max_length=200, min_length=100, do_sample=False)[0]['summary_text']
+
+    if pick_len_summary == "Medium":
+        summary_text = summarization(string, max_length=500, min_length=200, do_sample=False)[0]['summary_text']
+
+    if pick_len_summary == "Long":
+        summary_text = summarization(string, max_length=1024, min_length=500, do_sample=False)[0]['summary_text']
 
     return summary_text
 
