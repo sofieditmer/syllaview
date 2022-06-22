@@ -79,7 +79,7 @@ def main():
                     ('Short', 'Medium', 'Long'))
 
                 # number of topics
-                pick_n_topics = st.slider("Number of topics", 0, 5, 1)
+                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=2, step=1)
 
                 # make overview_df to be appended for each uploaded article
                 if pick_n_topics == 0:
@@ -194,7 +194,7 @@ def main():
                     ('Short', 'Medium', 'Long'))
 
                 # number of topics
-                pick_n_topics = st.slider("Number of topics", 0, 5, 1)
+                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=2, step=1)
 
                 # make overview_df to be appended for each uploaded article
                 if pick_n_topics == 0:
@@ -326,7 +326,7 @@ def most_frequent_words(list_clean_tokens, uploaded_file):
     Estimates the most frequent words within each reading and creates a frequency plot.
     """
 
-    with st.spinner(f"Finding the most frequent words in {uploaded_file.name}"):
+    with st.spinner(f"Identifying the most frequent words in {uploaded_file.name}"):
 
         # unlist
         unlist_clean_tokens = list(chain.from_iterable(list_clean_tokens))
@@ -361,7 +361,7 @@ def create_wordcloud(doc, uploaded_file):
     Code adapted from: https://medium.com/illumination/scraping-news-and-creating-a-word-cloud-in-python-10ea312c49ba
     """
 
-    with st.spinner(f"Preparing wordcloud visualization of {uploaded_file.name}"):
+    with st.spinner(f"Preparing the word cloud visualization of the most frequent words in {uploaded_file.name}"):
 
         newText = " "
         for word in doc:
@@ -386,7 +386,7 @@ def topic_modeling(list_clean_tokens, doc, uploaded_file):
     Performs topic modeling on each reading and creates a wordcloud for each topic. 
     """
 
-    with st.spinner(f"Performing topic modeling on {uploaded_file.name}"):
+    with st.spinner(f"Identifying the most prominent topics in {uploaded_file.name}"):
 
         # create dictionary
         dictionary = Dictionary(list_clean_tokens)
