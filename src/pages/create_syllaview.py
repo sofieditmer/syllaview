@@ -79,7 +79,7 @@ def main():
                     ('Short', 'Medium', 'Long'))
 
                 # number of topics
-                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=2, step=1)
+                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=1, step=1)
 
                 # make overview_df to be appended for each uploaded article
                 if pick_n_topics == 0:
@@ -188,29 +188,24 @@ def main():
             # ----- CUSTOMIZATION OPTIONS ----- #
             with st.expander("Click here for customization options"):
 
-                # length of summary
-                pick_len_summary = st.radio(
-                    "Length of the summary",
-                    ('Short', 'Medium', 'Long'))
-
                 # number of topics
-                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=2, step=1)
+                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=3, step=1)
 
                 # make overview_df to be appended for each uploaded article
                 if pick_n_topics == 0:
-                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Own Notes'])
+                    overview_df = pd.DataFrame(columns=['Reading', 'Keywords', 'Own Notes'])
                 
                 if pick_n_topics == 1:
-                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Main Topic', 'Own Notes'])
+                    overview_df = pd.DataFrame(columns=['Reading', 'Keywords', 'Main Topic', 'Own Notes'])
 
                 if pick_n_topics == 2:
-                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
+                    overview_df = pd.DataFrame(columns=['Reading', 'Keywords', 'Topic 1', 'Topic 2', 'Own Notes'])
 
                 if pick_n_topics == 3:
-                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
+                    overview_df = pd.DataFrame(columns=['Reading', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Own Notes'])
 
                 if pick_n_topics == 4:
-                    overview_df = pd.DataFrame(columns=['Reading', 'Summary', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
+                    overview_df = pd.DataFrame(columns=['Reading', 'Keywords', 'Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Own Notes'])
 
             for uploaded_scan in uploaded_scans:
 
@@ -218,7 +213,7 @@ def main():
                 clean_OCR_text = perform_OCR(uploaded_scan)
 
                 # ----- PREPARE TEXT ----- #
-                doc, list_clean_tokens, reading_summary = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+                doc, list_clean_tokens = prepare_ocr_text(uploaded_scan, clean_OCR_text)
 
                 # ----- FREQUENCY PLOT ----- #
                 frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
@@ -230,7 +225,7 @@ def main():
                 plt, topic0, topic1, topic2, topic3, topic4 = topic_modeling(list_clean_tokens, doc, uploaded_scan)
 
                 # ----- SYLLAVIEW: OVERVIEW DATAFRAME ----- #
-                temp_df = create_overview_df(pick_n_topics, uploaded_scan, reading_summary, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
+                temp_df = create_overview_df_scans(pick_n_topics, uploaded_scan, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4)
                 overview_df = overview_df.append(temp_df, ignore_index=True)   
 
             # ----- VISUALIZATIONS ----- #
@@ -261,7 +256,7 @@ def main():
                         clean_OCR_text = perform_OCR(uploaded_scan)
 
                         # ----- PREPARE TEXT ----- #
-                        doc, list_clean_tokens, _ = prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary)
+                        doc, list_clean_tokens = prepare_ocr_text(uploaded_scan, clean_OCR_text)
 
                         # ----- FREQUENCY PLOT ----- #
                         frequency_plot = most_frequent_words(list_clean_tokens, uploaded_scan)
@@ -518,6 +513,61 @@ def create_overview_df(pick_n_topics, uploaded_file, reading_summary, wordcloud_
 
     return temp_df
 
+# --------- CREATE OVERVIEW / SYLLAVIEW FUNCTION --------- #
+def create_overview_df_scans(pick_n_topics, uploaded_file, wordcloud_keywords, topic0, topic1, topic2, topic3, topic4):
+    """
+    Creates the overview dataframe, SyllaView, which holds each reading as a row and the summary, keywords, and topics as columns.
+    """
+        
+    with st.spinner("Preparing your SyllaView..."):
+
+        if pick_n_topics == 0:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords,
+                        'Own Notes': ""}
+
+        elif pick_n_topics == 1:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords, 
+                        'Main Topic': topic0,
+                        'Own Notes': ""}
+
+        elif pick_n_topics == 2:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords, 
+                        'Topic 1': topic0,
+                        'Topic 2': topic1,
+                        'Own Notes': ""}
+                    
+        elif pick_n_topics == 3:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords, 
+                        'Topic 1': topic0,
+                        'Topic 2': topic1,
+                        'Topic 3': topic2,
+                        'Own Notes': ""}
+
+        elif pick_n_topics == 4:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords, 
+                        'Topic 1': topic0,
+                        'Topic 2': topic1,
+                        'Topic 3': topic2,
+                        'Topic 4': topic3,
+                        'Own Notes': ""}
+
+        else:
+            temp_df = {'Reading': uploaded_file.name, 
+                        'Keywords': wordcloud_keywords, 
+                        'Topic 1': topic0,
+                        'Topic 2': topic1,
+                        'Topic 3': topic2,
+                        'Topic 4': topic3,
+                        'Topic 5': topic4,
+                        'Own Notes': ""}                       
+
+    return temp_df
+
 # --------- OCR FUNCTION --------- #
 def perform_OCR(uploaded_scan):
     
@@ -535,11 +585,8 @@ def perform_OCR(uploaded_scan):
             # convert image to greyscale
             grey = cv2.cvtColor(scan, cv2.COLOR_BGR2GRAY) 
 
-            # threshold image
-            (_, thres) = cv2.threshold(grey, 110, 255, cv2.THRESH_BINARY)
-
             # extract text from image
-            text = pytesseract.image_to_string(thres)
+            text = pytesseract.image_to_string(grey)
 
             # clean-up extracted text
             clean_OCR_text = ocr_correct(replace(text))
@@ -547,7 +594,7 @@ def perform_OCR(uploaded_scan):
     return clean_OCR_text
 
 # --------- PREPARE OCR TEXT FUNCTION--------- #
-def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
+def prepare_ocr_text(uploaded_scan, clean_OCR_text):
     """
     Annotates the extracted text from OCR, creates a list of clean tokens, and prepares the reading summary. 
     """
@@ -565,10 +612,7 @@ def prepare_ocr_text(uploaded_scan, clean_OCR_text, pick_len_summary):
             # split
             list_clean_tokens = [token.split() for token in list_clean_tokens]
 
-            # create summary
-            reading_summary = summarize_using_transformer(doc, pick_len_summary)
-
-    return doc, list_clean_tokens, reading_summary
+    return doc, list_clean_tokens
 
         
 

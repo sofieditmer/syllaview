@@ -20,6 +20,3 @@ def main():
 
         # demonstration video
         st.video("https://www.youtube.com/watch?v=fm7PIdc4tBU")
-
-
-        
