@@ -195,7 +195,7 @@ def main():
             with st.expander("Click here for customization options"):
 
                 # number of topics
-                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=3, step=1)
+                pick_n_topics = st.slider(label="Number of topics", min_value=0, max_value=5, value=1, step=1)
 
                 # make overview_df to be appended for each uploaded article
                 if pick_n_topics == 0:
