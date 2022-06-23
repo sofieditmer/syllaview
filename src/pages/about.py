@@ -40,7 +40,7 @@ def main():
                 
                 st.write("3. The most prominent topics")
 
-                st.write("4. The possibility to download the SyllaView as a CSV-file to your local computer")
+                st.write("4. The possibility to download the SyllaView as a CSV-file to your local computer and write your own notes to each article")
 
                 st.write("All of the above are gathered in one place, which means that you no longer have to flick through multiple PDFs at once!")
         
@@ -52,13 +52,16 @@ def main():
                 st.write("**1. Text Summarization**")
                 st.write("When uploading a PDF-file the Python package *pdf_reader* is used to extract the text from the file. The text is then annotated using the SpaCy English model *en_core_web_lg* which is a trained language model. Then the summarization-pipeline available in the *Transformers* Python package is used to create a text summary. If you wish to know more about how the summarization works, you can read more [here](https://huggingface.co/tasks/summarization) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
                 
-                st.write("**2. Keywords**")
-                st.write("The keywords are the most common words in the uploaded reading. These are estimated using the *FreqDist* function available in the *NLTK* library.")
-
-                st.write("**3. Topic Modeling**")
+                st.write("**2. Topic Modeling**")
                 st.write(" Topic Modeling is a text-mining tool used to extract hidden semantic structure from a text. Topic modeling assumes that each document can be described as a distribution of topics and each topic can be described by as distribution of words. In SyllaView, the topics are extracted from the uploaded readings using the *LdaMulticore* function available in *Gensim*. This type of analysis is based on word frequency and the assumption that (1) a given word will appear more if a text is about that specific topic and (2) any text typically contains more than one topic. The latter is the reason why SyllaView allows the user to estimate up to 5 topics per text. The topics are listed as clusters of words that make up that particular topic. If you wish to know more about how topic modeling works you can read more [here](https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/) or check out the Python scripts available on our [GitHub](https://github.com/sofieditmer/syllaview/blob/main/src/pages/create_syllaview.py).")
 
-                st.write("**4. Optical Character Recognition (OCR) for scanned readings**")
+                st.write("**3. Keywords**")
+                st.write("The keywords are the most common words in the uploaded reading. These are estimated using the *FreqDist* function available in the *NLTK* library.")
+
+                st.write("**4. Wordcloud**")
+                st.write("A wordcloud is a visual representation of the most freuqent words. The size of the words correspond to the frequency of the words, i.e. the larger the word, the more frequent it is. The wordcloud was made usign the *wordcloud* library.")
+
+                st.write("**5. Optical Character Recognition (OCR) for scanned readings**")
                 st.write("OCR allows a user of SyllaView to upload a scanned reading e.g. as a book. When a scanned text is uploaded, SyllaView converts the scan to gray-scale, i.e. only black and white. The scan is then thresholded to figure out where there is text and is not. The summary is then created the same way as for regular PDF-files.")
 
         # FAQ
